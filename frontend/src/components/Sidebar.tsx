@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Map as MapIcon, BarChart3, Settings } from "lucide-react";
+import { LayoutDashboard, Map as MapIcon, BarChart3, Settings, BrainCircuit } from "lucide-react";
 
 export default function Sidebar() {
     const location = useLocation();
 
     const navItems = [
         { name: "Live Control", path: "/", icon: <LayoutDashboard size={20} /> },
+        { name: "What-If Engine", path: "/what-if", icon: <BrainCircuit size={20} /> },
         { name: "Simulation", path: "/simulation", icon: <MapIcon size={20} /> },
         { name: "Analytics", path: "/analytics", icon: <BarChart3 size={20} /> },
     ];

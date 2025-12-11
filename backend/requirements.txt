@@ -1,4 +1,14 @@
 fastapi
 uvicorn
 motor
+socketio
 python-socketio
+pandas
+numpy
+torch
+scikit-learn
+xgboost
+prophet
+shap
+joblib
+requestsn-socketio

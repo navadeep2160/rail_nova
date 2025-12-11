@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +12,8 @@ from simulation.engine import SimulationEngine
 from database.service import DatabaseService
 from ml_service import MLService
 from datetime import datetime
+from api.what_if import router as what_if_router
+from api.analytics import router as analytics_router
 
 # Socket.IO setup (AsyncServer)
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
@@ -28,7 +34,8 @@ async def lifespan(app: FastAPI):
     ml_service = MLService()
     
     print("Initializing Simulation Engine...")
-    simulation_engine = SimulationEngine(sio, db_service)
+    simulation_engine = SimulationEngine(sio, db_service, ml_service)
+    app.state.simulation_engine = simulation_engine # Expose to API routers
     task = asyncio.create_task(simulation_engine.run())
     yield
     # Shutdown
@@ -57,6 +64,9 @@ db = client.rail_nova
 async def root():
     return {"message": "Rail-Nova Backend Operational"}
 
+app.include_router(what_if_router)
+app.include_router(analytics_router)
+
 # API Endpoints
 # ML Endpoints
 @app.post("/ml/predict/eta")
@@ -75,6 +85,25 @@ async def predict_delay(data: dict):
 async def predict_conflict(data: dict):
     if ml_service:
         return {"conflict_prob": ml_service.predict_conflict(data['track_id'], data['time_gap'], data['opposite_dir'])}
+    return {"error": "ML Service Unavailable"}
+
+@app.post("/ml/predict/congestion")
+async def predict_congestion(data: dict):
+    if ml_service:
+        hours = data.get('hours', 24)
+        return {"forecast": ml_service.predict_congestion(hours)}
+    return {"error": "ML Service Unavailable"}
+
+@app.post("/ml/explain/delay")
+async def explain_delay(data: dict):
+    if ml_service:
+        return {"explanation": ml_service.explain_delay(data['weather'], data['priority'], data['current_delay'])}
+    return {"error": "ML Service Unavailable"}
+
+@app.post("/ml/explain/conflict")
+async def explain_conflict(data: dict):
+    if ml_service:
+        return {"explanation": ml_service.explain_conflict(data['track_id'], data['time_gap'], data['opposite_dir'])}
     return {"error": "ML Service Unavailable"}
 
 @app.get("/history/replay")

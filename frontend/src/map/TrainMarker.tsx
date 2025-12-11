@@ -1,15 +1,24 @@
-import { useRef, useEffect } from "react";
-import { Marker, Tooltip, useMap } from "react-leaflet";
+import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
-import { motion } from "framer-motion";
 
 // Custom Train Icon
-const createTrainIcon = (color: string) => L.divIcon({
-    className: "train-marker-icon",
-    html: `<div style="background-color: ${color}; width: 16px; height: 16px; border: 2px solid white; border-radius: 4px; transform: rotate(45deg); box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
+// Custom Train Icon with Pulse Effect for Delayed/Stopped
+const createTrainIcon = (status: string) => {
+    const color = status === "on-time" ? "#22c55e" : status === "delayed" ? "#ef4444" : "#eab308";
+    const pulseClass = status === "delayed" ? "animate-pulse" : "";
+
+    return L.divIcon({
+        className: "train-marker-icon",
+        html: `
+            <div class="relative w-6 h-6 flex items-center justify-center">
+                <div class="absolute inset-0 bg-white rounded-full opacity-50 ${pulseClass}"></div>
+                <div class="w-4 h-4 rounded-full border-2 border-white shadow-lg transform transition-transform duration-500 hover:scale-125" style="background-color: ${color}; box-shadow: 0 0 8px ${color};"></div>
+            </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+};
 
 interface TrainMarkerProps {
     id: string;
@@ -20,8 +29,9 @@ interface TrainMarkerProps {
     status: "on-time" | "delayed";
 }
 
-export default function TrainMarker({ id, lat, lng, name, speed, status }: TrainMarkerProps) {
-    const markerRef = useRef<L.Marker>(null);
+export default function TrainMarker({ lat, lng, name, speed, status }: TrainMarkerProps) {
+    // markerRef removed as logic was unused
+
 
     // Framer Motion isn't directly compatible with Leaflet's render loop for position updates in the same way as DOM elements.
     // However, for simplified "animation" in this phase, we rely on Leaflet's internal transition if we were to update props frequently,
@@ -36,9 +46,8 @@ export default function TrainMarker({ id, lat, lng, name, speed, status }: Train
 
     return (
         <Marker
-            ref={markerRef}
             position={[lat, lng]}
-            icon={createTrainIcon(status === "on-time" ? "#22c55e" : "#ef4444")}
+            icon={createTrainIcon(status)}
         >
             <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                 <div className="text-sm">

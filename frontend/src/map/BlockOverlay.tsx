@@ -22,10 +22,12 @@ export default function BlockOverlay() {
                     key={block.id}
                     positions={block.positions}
                     pathOptions={{
-                        color: block.status === "occupied" ? "#ef4444" : "#22c55e",
-                        weight: 6,
-                        opacity: 0.4,
-                        lineCap: 'butt'
+                        color: block.status === "maintenance" ? "#3b82f6" : // Blue for maintenance
+                            block.status === "occupied" ? "#ef4444" : "#22c55e",
+                        weight: block.status === "maintenance" ? 8 : 6,
+                        dashArray: block.status === "maintenance" ? "10, 10" : undefined,
+                        opacity: 0.6,
+                        lineCap: 'round'
                     }}
                 />
             ))}

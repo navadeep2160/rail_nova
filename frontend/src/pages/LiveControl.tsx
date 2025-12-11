@@ -5,6 +5,7 @@ import TrackLayer from "@/map/TrackLayer";
 import BlockOverlay from "@/map/BlockOverlay";
 import TrainMarker from "@/map/TrainMarker";
 import AlertsPanel from "@/components/AlertsPanel";
+import AIAssistant from "@/components/AIAssistant";
 import TrainTable from "@/components/TrainTable";
 import { useState, useEffect } from "react";
 
@@ -23,17 +24,26 @@ export default function LiveControl() {
         { id: "12723", lat: 17.5, lng: 78.8, name: "Telangana Exp", speed: 85, status: "on-time" },
     ]);
 
-    // Simple interpolation simulation
+    // Connect to Backend WebSocket
     useEffect(() => {
-        const interval = setInterval(() => {
-            setTrains(prev => prev.map(t => ({
-                ...t,
-                // Move slightly east
-                lng: t.lng + 0.005,
-                lat: t.lat + 0.001
-            })));
-        }, 1000);
-        return () => clearInterval(interval);
+        // Assume global socket or create new one since we don't have a context provider visible in this view
+        // Ideally use a useSocket hook.
+        // For Hackathon speed:
+        import('socket.io-client').then(({ io }) => {
+            const socket = io('http://localhost:8000');
+
+            socket.on('connect', () => {
+                console.log("LiveControl connected to backend");
+            });
+
+            socket.on('state_update', (data: any) => {
+                if (data.trains) {
+                    setTrains(data.trains);
+                }
+            });
+
+            return () => socket.disconnect();
+        });
     }, []);
 
     return (
@@ -68,11 +78,12 @@ export default function LiveControl() {
                     </div>
 
                     {/* Right Panel */}
-                    <div className="col-span-3 h-full flex flex-col gap-4">
-                        <AlertsPanel />
-                        {/* AI Assistant Placeholder */}
-                        <div className="bg-card border border-border rounded-lg p-4 h-1/3 flex items-center justify-center text-muted-foreground">
-                            AI Assistant Ready
+                    <div className="col-span-3 h-full flex flex-col gap-4 min-h-0">
+                        <div className="h-1/2 min-h-0">
+                            <AlertsPanel />
+                        </div>
+                        <div className="h-1/2 min-h-0">
+                            <AIAssistant />
                         </div>
                     </div>
                 </div>

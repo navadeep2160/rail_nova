@@ -34,7 +34,8 @@ class Block(BaseModel):
 
 class AlertType(str, Enum):
     CRITICAL = "critical"
-    WARNING = "warning"
+    MAJOR = "major"
+    MINOR = "minor"
     INFO = "info"
 
 class Alert(BaseModel):
@@ -49,3 +50,5 @@ class Suggestion(BaseModel):
     action: str # "STOP", "SLOW_DOWN", "REROUTE"
     reason: str
     confidence: float
+    predicted_effect: str = "Unknown"
+    actions: List[str] = [] # Multiple options
