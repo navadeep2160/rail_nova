@@ -6,6 +6,7 @@ import socketio
 from contextlib import asynccontextmanager
 from simulation.engine import SimulationEngine
 from database.service import DatabaseService
+from ml_service import MLService
 from datetime import datetime
 
 # Socket.IO setup (AsyncServer)
@@ -14,14 +15,17 @@ sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 # Global Engine Instance
 simulation_engine = None
 db_service = None
+ml_service = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global simulation_engine, db_service
+    global simulation_engine, db_service, ml_service
     
     # DB Init
     db_service = DatabaseService(db)
+    # ML Init
+    ml_service = MLService()
     
     print("Initializing Simulation Engine...")
     simulation_engine = SimulationEngine(sio, db_service)
@@ -54,6 +58,25 @@ async def root():
     return {"message": "Rail-Nova Backend Operational"}
 
 # API Endpoints
+# ML Endpoints
+@app.post("/ml/predict/eta")
+async def predict_eta(data: dict):
+    if ml_service:
+        return {"eta": ml_service.predict_eta(data['speed'], data['dist'], data['delay'], data['hour'])}
+    return {"error": "ML Service Unavailable"}
+
+@app.post("/ml/predict/delay")
+async def predict_delay(data: dict):
+    if ml_service:
+        return {"predicted_delay": ml_service.predict_delay(data['weather'], data['priority'], data['current_delay'])}
+    return {"error": "ML Service Unavailable"}
+
+@app.post("/ml/predict/conflict")
+async def predict_conflict(data: dict):
+    if ml_service:
+        return {"conflict_prob": ml_service.predict_conflict(data['track_id'], data['time_gap'], data['opposite_dir'])}
+    return {"error": "ML Service Unavailable"}
+
 @app.get("/history/replay")
 async def get_history(from_time: str, to_time: str):
     if db_service:
