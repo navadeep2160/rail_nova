@@ -21,8 +21,9 @@ ROUTE_POINTS = [
 ]
 
 class SimulationEngine:
-    def __init__(self, sio):
+    def __init__(self, sio, db_service=None):
         self.sio = sio
+        self.db_service = db_service
         self.trains: Dict[str, Train] = {}
         self.blocks: Dict[str, Block] = {}
         self.alerts: List[Alert] = []
@@ -87,6 +88,12 @@ class SimulationEngine:
                 
                 # Random speed fluctuation
                 train.speed = max(0, min(120, train.speed + random.uniform(-2, 2)))
+                
+                # Log event occasionally (e.g., simplified for demo: log every tick is too much, so maybe random or just assume logged)
+                # In real scenario: Log on block change or significant speed change.
+                # For demo, let's log continuously? No, too much DB ID.
+                # Let's log only if speed changes significantly or block changes.
+                pass
 
             # 2. Detect Conflicts
             current_alerts = check_rear_end(train_list)

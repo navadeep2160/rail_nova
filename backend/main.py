@@ -5,19 +5,26 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import socketio
 from contextlib import asynccontextmanager
 from simulation.engine import SimulationEngine
+from database.service import DatabaseService
+from datetime import datetime
 
 # Socket.IO setup (AsyncServer)
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 
 # Global Engine Instance
 simulation_engine = None
+db_service = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global simulation_engine
+    global simulation_engine, db_service
+    
+    # DB Init
+    db_service = DatabaseService(db)
+    
     print("Initializing Simulation Engine...")
-    simulation_engine = SimulationEngine(sio)
+    simulation_engine = SimulationEngine(sio, db_service)
     task = asyncio.create_task(simulation_engine.run())
     yield
     # Shutdown
@@ -47,6 +54,17 @@ async def root():
     return {"message": "Rail-Nova Backend Operational"}
 
 # API Endpoints
+@app.get("/history/replay")
+async def get_history(from_time: str, to_time: str):
+    if db_service:
+        try:
+            start = datetime.fromisoformat(from_time)
+            end = datetime.fromisoformat(to_time)
+            return await db_service.get_replay_data(start, end)
+        except ValueError:
+            return {"error": "Invalid date format. Use ISO 8601"}
+    return []
+
 @app.get("/trains/live")
 async def get_live_trains():
     if simulation_engine:
