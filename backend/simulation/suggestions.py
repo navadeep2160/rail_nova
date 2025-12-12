@@ -1,5 +1,5 @@
 from typing import List
-from .models import Train, Suggestion, Alert, AlertType
+from simulation.models import Train, Suggestion, Alert, AlertType
 import uuid
 
 def generate_suggestions(trains: List[Train], alerts: List[Alert]) -> List[Suggestion]:

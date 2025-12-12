@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
-from ..simulation.scenarios import ScenarioConfig, SimulationResult
-from ..simulation.what_if_engine import WhatIfEngine
+from simulation.scenarios import ScenarioConfig, SimulationResult
+from simulation.what_if_engine import WhatIfEngine
 
 router = APIRouter(prefix="/api/what-if", tags=["what-if"])
 

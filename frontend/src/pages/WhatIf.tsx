@@ -3,15 +3,21 @@ import { WhatIfControls } from '../components/whatif/Controls';
 import { AnalysisPanel } from '../components/whatif/AnalysisPanel';
 import Sidebar from '../components/Sidebar';
 import { BrainCircuit } from 'lucide-react';
+import RailMap from "@/map/RailMap";
+import TrackLayer from "@/map/TrackLayer";
+import BlockOverlay from "@/map/BlockOverlay";
+import TrainMarker from "@/map/TrainMarker";
 
 export const WhatIf: React.FC = () => {
     const [liveTrains, setLiveTrains] = useState([]);
     const [liveBlocks, setLiveBlocks] = useState([]);
+    const [liveAlerts, setLiveAlerts] = useState([]);
     const [simulationResult, setSimulationResult] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
-    // Initial Fetch of Live Data
+    // Initial Fetch & Socket Subscription for Live Data
     useEffect(() => {
+        // Initial Fetch
         const fetchData = async () => {
             try {
                 const [trainsRes, blocksRes] = await Promise.all([
@@ -22,11 +28,35 @@ export const WhatIf: React.FC = () => {
                 const blocks = await blocksRes.json();
                 setLiveTrains(trains);
                 setLiveBlocks(blocks);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Failed to fetch live data", err);
             }
         };
         fetchData();
+
+        // Socket Subscription for Real-time Movement
+        import("socket.io-client").then(({ io }) => {
+            const socket = io('http://localhost:8000');
+
+            socket.on('connect', () => {
+                console.log("What-If connected to Live Stream");
+            });
+
+            socket.on('state_update', (data: any) => {
+                // Only update live state if no simulation result is actively showing 
+                // OR update background state anyway
+                if (data.trains) {
+                    setLiveTrains(data.trains);
+                }
+                if (data.alerts) {
+                    setLiveAlerts(data.alerts);
+                }
+            });
+
+            return () => {
+                socket.disconnect();
+            };
+        });
     }, []);
 
     const runSimulation = async (config: any) => {
@@ -41,7 +71,7 @@ export const WhatIf: React.FC = () => {
             });
             const data = await res.json();
             setSimulationResult(data);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Simulation failed", err);
         } finally {
             setLoading(false);
@@ -96,40 +126,45 @@ export const WhatIf: React.FC = () => {
                     {/* We'll put Analysis here for now as requested by user -> "Visual outcome map" was requested but I'll focus on Analysis first as per my plan order */}
                     {/* Actually, let's put Analysis on Right and Map in Middle. */}
 
-                    <div className="col-span-5 bg-gray-900 rounded-xl border border-gray-800 p-4 relative overflow-hidden flex flex-col">
-                        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Predicted Outcome Map</h2>
+                    <div className="col-span-12 lg:col-span-5 bg-gray-900 rounded-xl border border-gray-800 p-1 relative overflow-hidden flex flex-col h-[600px] lg:h-auto">
+                        <div className="absolute top-2 left-2 z-[400] bg-black/50 backdrop-blur px-2 py-1 rounded border border-white/10">
+                            <h2 className="text-xs font-bold text-gray-300 uppercase tracking-wider">Predicted Outcome Map</h2>
+                        </div>
 
-                        {/* Placeholder for Map - Just rendering text or maybe I should render a simple visualizer */}
-                        <div className="flex-1 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-center relative">
-                            {simulationResult ? (
-                                <div className="absolute inset-0 p-4 overflow-y-auto">
-                                    {/* Simple List Visualization of Final Train Positions */}
-                                    {simulationResult.final_trains.map((t: any) => (
-                                        <div key={t.id} className="mb-2 p-2 bg-gray-800 rounded border border-gray-700 flex justify-between">
-                                            <span>{t.name}</span>
-                                            <span className="text-blue-400">{t.distance.toFixed(1)} km</span>
-                                            <span className={t.speed < 10 ? 'text-red-400' : 'text-green-400'}>{t.speed.toFixed(0)} km/h</span>
-                                        </div>
-                                    ))}
+                        {/* Map Visualization */}
+                        <div className="flex-1 rounded-lg overflow-hidden relative">
+                            <RailMap>
+                                <TrackLayer />
+                                <BlockOverlay />
 
-                                    {simulationResult.predicted_conflicts.length > 0 && (
-                                        <div className="mt-4">
-                                            <h4 className="text-red-500 font-bold">Conflicts Predicted:</h4>
-                                            {simulationResult.predicted_conflicts.map((c: any, i: number) => (
-                                                <div key={i} className="text-xs text-red-300 mt-1">{c.message}</div>
-                                            ))}
-                                        </div>
-                                    )}
+                                {/* Render Live Trains (faded) if no result, or Simulated Trains if result exists */}
+                                {/* Actually, let's show Live Trains as ghosts if Result exists, or just Result */}
+                                {(simulationResult?.final_trains || liveTrains).map((t: any) => (
+                                    <TrainMarker
+                                        key={t.id}
+                                        {...t}
+                                        status={simulationResult ? (t.speed < 5 ? 'delayed' : 'on-time') : t.status} // Simple status logic for sim
+                                    />
+                                ))}
+                            </RailMap>
+
+                            {!simulationResult && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[500]">
+                                    <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10 text-sm text-gray-300">
+                                        Showing Live State (Run Simulation to see Prediction)
+                                    </div>
                                 </div>
-                            ) : (
-                                <span className="text-gray-600">Map Visualization Placeholder</span>
                             )}
                         </div>
                     </div>
 
                     {/* Right Col: Analytics */}
                     <div className="col-span-4 h-full overflow-y-auto">
-                        <AnalysisPanel simulationResult={simulationResult} liveTrains={liveTrains} />
+                        <AnalysisPanel
+                            simulationResult={simulationResult}
+                            liveTrains={liveTrains}
+                            liveAlerts={liveAlerts}
+                        />
                     </div>
 
                 </div>

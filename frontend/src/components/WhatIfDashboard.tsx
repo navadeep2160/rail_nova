@@ -3,16 +3,23 @@ import { Play, RotateCcw, AlertTriangle, TrendingUp, Clock, CloudRain, Sun, Wind
 
 const WhatIfDashboard = () => {
     // State
-    const [liveTrains, setLiveTrains] = useState([]);
-    const [liveBlocks, setLiveBlocks] = useState([]);
-    const [scenario, setScenario] = useState({
+    const [liveTrains, setLiveTrains] = useState<any[]>([]);
+    const [liveBlocks, setLiveBlocks] = useState<any[]>([]);
+    const [scenario, setScenario] = useState<{
+        weather: string;
+        train_delays: Record<string, number>;
+        block_maintenance: string[];
+        speed_limits: Record<string, number>;
+        simulation_horizon_minutes: number;
+        modifiers?: any; // Add modifiers to type definition
+    }>({
         weather: 'clear',
         train_delays: {}, // trainId -> minutes
         block_maintenance: [], // list of blockIds
         speed_limits: {},
         simulation_horizon_minutes: 60
     });
-    const [result, setResult] = useState(null);
+    const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
     // Fetch initial data
@@ -27,7 +34,7 @@ const WhatIfDashboard = () => {
                 const blocks = await bRes.json();
                 setLiveTrains(trains);
                 setLiveBlocks(blocks);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Failed to fetch live data", err);
             }
         };
@@ -90,7 +97,7 @@ const WhatIfDashboard = () => {
             });
             const data = await res.json();
             setResult(data);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Simulation failed", err);
         } finally {
             setLoading(false);
@@ -198,8 +205,8 @@ const WhatIfDashboard = () => {
                                     <button
                                         onClick={() => toggleMaintenance(block.id)}
                                         className={`px-3 py-1 rounded text-xs font-medium transition-colors ${(scenario.block_maintenance || []).includes(block.id)
-                                                ? 'bg-red-500/20 text-red-500 border border-red-500/50'
-                                                : 'bg-green-500/20 text-green-500 border border-green-500/50'
+                                            ? 'bg-red-500/20 text-red-500 border border-red-500/50'
+                                            : 'bg-green-500/20 text-green-500 border border-green-500/50'
                                             }`}
                                     >
                                         {(scenario.block_maintenance || []).includes(block.id) ? 'CLOSED' : 'OPEN'}
@@ -234,13 +241,13 @@ const WhatIfDashboard = () => {
                                 <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
                                     <div className="text-slate-400 text-xs uppercase">Avg Network Load</div>
                                     <div className="text-2xl font-bold text-blue-400">
-                                        {Object.values(result.block_utilization).reduce((a, b) => a + b, 0) / (Object.values(result.block_utilization).length || 1).toFixed(1)}%
+                                        {((Object.values(result?.block_utilization || {}) as number[]).reduce((a: number, b: number) => a + b, 0) / (Object.values(result?.block_utilization || {}).length || 1)).toFixed(1)}%
                                     </div>
                                 </div>
                                 <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
                                     <div className="text-slate-400 text-xs uppercase">Critical Delays</div>
                                     <div className="text-2xl font-bold text-orange-400">
-                                        {Object.values(result.max_delays).filter(d => d > 30).length}
+                                        {(Object.values(result?.max_delays || {}).filter((d: any) => d > 30) || []).length}
                                     </div>
                                 </div>
                             </div>
@@ -285,7 +292,7 @@ const WhatIfDashboard = () => {
                                                 <td className="p-2 text-slate-400">{(liveTrains.find(lt => lt.id === t.id)?.distance || 0).toFixed(1)} km</td>
                                                 <td className="p-2 text-white">{t.distance.toFixed(1)} km</td>
                                                 <td className="p-2 text-orange-400">
-                                                    +{((result.max_delays[t.id] || 0)).toFixed(1)} min
+                                                    +{(result?.max_delays?.[t.id] ?? 0).toFixed(1)} min
                                                 </td>
                                             </tr>
                                         ))}

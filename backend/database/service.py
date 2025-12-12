@@ -1,5 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from .models import TrainEvent, ConflictLog, AISuggestionLog
+from database.models import TrainEvent, ConflictLog, AISuggestionLog
 from typing import List
 from datetime import datetime
 

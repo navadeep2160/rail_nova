@@ -24,19 +24,28 @@ const stationIcon = L.divIcon({
 });
 
 export default function TrackLayer() {
+    // Generate Parallel Track (Offset by ~0.0002 deg lat ~20 meters)
+    const DOWN_LINE = TRACK_POLYLINE;
+    const UP_LINE = TRACK_POLYLINE.map(([lat, lng]) => [lat + 0.0002, lng] as [number, number]);
+
     return (
         <>
-            {/* Main Track Line */}
+            {/* Down Line (Main) */}
             <Polyline
-                positions={TRACK_POLYLINE}
-                pathOptions={{ color: "#60a5fa", weight: 4, opacity: 0.7, dashArray: '10, 10' }}
+                positions={DOWN_LINE}
+                pathOptions={{ color: "#3b82f6", weight: 3, opacity: 0.8 }}
+            />
+            {/* Up Line (Parallel) */}
+            <Polyline
+                positions={UP_LINE}
+                pathOptions={{ color: "#60a5fa", weight: 3, opacity: 0.8, dashArray: '5, 5' }}
             />
 
             {/* Stations */}
             {STATIONS.map((station) => (
                 <Marker key={station.id} position={[station.lat, station.lng]} icon={stationIcon}>
                     <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                        <span className="font-bold text-sm">{station.name} ({station.code})</span>
+                        <span className="font-bold text-sm bg-background/80 px-2 py-1 rounded border border-border">{station.name}</span>
                     </Tooltip>
                 </Marker>
             ))}

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from enum import Enum
-from .models import Train, Block, Alert
+from simulation.models import Train, Block, Alert
 
 class WeatherCondition(str, Enum):
     CLEAR = "clear"

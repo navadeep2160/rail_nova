@@ -2,9 +2,9 @@ from typing import Dict, List, Optional
 import copy
 import logging
 from datetime import datetime, timedelta
-from .models import Train, Block, Alert, TrainStatus, Suggestion, AlertType
-from .scenarios import ScenarioConfig, ScenarioModifier, SimulationResult, WeatherCondition
-from .conflict_detector import check_rear_end, check_overspeed
+from simulation.models import Train, Block, Alert, TrainStatus, Suggestion, AlertType
+from simulation.scenarios import ScenarioConfig, ScenarioModifier, SimulationResult, WeatherCondition
+from simulation.conflict_detector import check_rear_end, check_overspeed
 
 # Shared Constants (Should be in a config file ideally)
 MAX_ROUTE_KM = 137

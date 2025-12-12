@@ -5,13 +5,42 @@ import { Clock, AlertTriangle } from 'lucide-react';
 interface AnalysisPanelProps {
     simulationResult: any;
     liveTrains: any[];
+    liveAlerts?: any[];
 }
 
-export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ simulationResult }) => {
+export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ simulationResult, liveAlerts = [] }) => {
     if (!simulationResult) {
         return (
-            <div className="flex items-center justify-center h-full text-gray-400 bg-gray-900/50 rounded-lg p-8 border border-dashed border-gray-700">
-                Run a simulation to see analysis
+            <div className="h-full flex flex-col gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <h3 className="text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Live System Monitor
+                    </h3>
+                    <p className="text-xs text-gray-400">Monitoring real-time traffic. Run a simulation to see predictions.</p>
+                </div>
+
+                {/* Live Alerts List */}
+                <div className="flex-1 bg-gray-800/50 rounded-lg border border-gray-700 p-4 overflow-y-auto">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Active System Alerts</h3>
+                    {liveAlerts.length === 0 ? (
+                        <div className="text-gray-500 text-sm italic">No active alerts. System optimal.</div>
+                    ) : (
+                        <div className="space-y-3">
+                            {liveAlerts.map((alert, idx) => (
+                                <div key={idx} className={`p-3 rounded border ${alert.type === 'critical' ? 'bg-red-900/20 border-red-800' : 'bg-orange-900/20 border-orange-800'
+                                    }`}>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className={`text-xs font-bold uppercase ${alert.type === 'critical' ? 'text-red-400' : 'text-orange-400'
+                                            }`}>{alert.type} Alert</span>
+                                        <span className="text-xs text-gray-500">{alert.time}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-300">{alert.message}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }
@@ -20,7 +49,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ simulationResult }
     // Since we don't have "live delay" easily available as a number on client without calculation,
     // we'll just show the "Max Delay" metric from simulation.
 
-    const delayData = Object.entries(simulationResult.max_delays).map(([tid, delay]) => {
+    const delayData = Object.entries(simulationResult.max_delays || {}).map(([tid, delay]) => {
         const trainName = simulationResult.final_trains.find((t: any) => t.id === tid)?.name || tid;
         return {
             name: trainName,
@@ -28,7 +57,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ simulationResult }
         };
     });
 
-    const utilizationData = Object.entries(simulationResult.block_utilization).map(([bid, util]) => ({
+    const utilizationData = Object.entries(simulationResult.block_utilization || {}).map(([bid, util]) => ({
         name: bid.replace('BLK-', ''),
         utilization: Math.round((util as number))
     }));

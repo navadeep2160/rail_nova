@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from .models import Train, Block, Alert, AlertType
+from simulation.models import Train, Block, Alert, AlertType
 from datetime import datetime
 
 # We will need the MLService instance. 
@@ -24,8 +24,13 @@ def check_rear_end(trains: List[Train], safe_distance_km: float = 2.0) -> List[A
         if distance_gap < safe_distance_km and distance_gap > 0:
             severity = AlertType.CRITICAL if distance_gap < 1.0 else AlertType.MAJOR
             
+            # Deterministic ID based on train IDs to prevent spamming new alerts
+            # Hash of t1.id + t2.id to int
+            # Simple hash logic to keep ID stable for the same pair
+            alert_id = abs(hash(t1.id + t2.id)) % 1000000
+            
             alerts.append(Alert(
-                id=int(datetime.now().timestamp() + i), 
+                id=alert_id, 
                 type=severity,
                 message=f"Collision Risk: {t1.name} and {t2.name} are too close ({distance_gap:.2f}km)",
                 time=datetime.now().strftime("%H:%M:%S")

@@ -3,16 +3,20 @@ import LiveControl from "@/pages/LiveControl";
 import { WhatIf } from "@/pages/WhatIf";
 import Analytics from "@/pages/Analytics";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LiveControl />} />
-        <Route path="/what-if" element={<WhatIf />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/simulation" element={<div className="p-10 text-2xl">Simulation Mode (Legacy)</div>} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LiveControl />} />
+          <Route path="/what-if" element={<WhatIf />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/simulation" element={<WhatIf />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

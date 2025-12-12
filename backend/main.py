@@ -8,12 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import socketio
 from contextlib import asynccontextmanager
+
 from simulation.engine import SimulationEngine
 from database.service import DatabaseService
 from ml_service import MLService
 from datetime import datetime
 from api.what_if import router as what_if_router
 from api.analytics import router as analytics_router
+from api.simulation import router as simulation_router
 
 # Socket.IO setup (AsyncServer)
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
@@ -66,6 +68,7 @@ async def root():
 
 app.include_router(what_if_router)
 app.include_router(analytics_router)
+app.include_router(simulation_router)
 
 # API Endpoints
 # ML Endpoints
