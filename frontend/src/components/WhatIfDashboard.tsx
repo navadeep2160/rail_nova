@@ -304,12 +304,10 @@ const WhatIfDashboard = () => {
                 </div>
             </div>
 
-            {/* Visual Map Placeholder (Optional improvement) */}
-            {/* <div className="mt-4 h-48 bg-slate-800 rounded border border-slate-700 flex items-center justify-center text-slate-500 text-sm">
-                Future Projection Map (Coming Soon)
-            </div> */}
+            {/* Visual Map Placeholder removed */}
         </div>
     );
 };
+
 
 export default WhatIfDashboard;

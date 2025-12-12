@@ -8,15 +8,22 @@ const createTrainIcon = (status: string) => {
     const pulseClass = status === "delayed" ? "animate-pulse" : "";
 
     return L.divIcon({
-        className: "train-marker-icon",
+        className: "train-marker-icon bg-transparent border-none",
         html: `
-            <div class="relative w-6 h-6 flex items-center justify-center">
-                <div class="absolute inset-0 bg-white rounded-full opacity-50 ${pulseClass}"></div>
-                <div class="w-4 h-4 rounded-full border-2 border-white shadow-lg transform transition-transform duration-500 hover:scale-125" style="background-color: ${color}; box-shadow: 0 0 8px ${color};"></div>
+            <div class="relative w-8 h-8 flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300">
+                <svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 bg-slate-900 rounded-full p-1 shadow-lg shadow-black/50 ${pulseClass} border border-slate-600">
+                    <path d="M3 13v6h2" fill="${color}" stroke="none"></path>
+                    <path d="M19 13v6h2" fill="${color}" stroke="none"></path>
+                    <path d="M2 13h20" stroke="${color}"></path>
+                    <path d="M4 3h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="#1e293b"></path>
+                    <path d="M8 8h.01" stroke="white" stroke-width="3"></path>
+                    <path d="M16 8h.01" stroke="white" stroke-width="3"></path>
+                    <path d="M12 17v-4" stroke="${color}"></path>
+                </svg>
             </div>
         `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+        iconSize: [32, 32],
+        iconAnchor: [16, 16] // Center the icon
     });
 };
 

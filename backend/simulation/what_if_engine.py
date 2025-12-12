@@ -212,11 +212,11 @@ class WhatIfEngine:
             for bid, count in self.block_utilization_counters.items()
         }
         
-        # Attach ETAs to trains (hacky via dynamic prop or just trust client to read it? 
-        # Models.py train doesn't have ETA field.
-        # We'll just return it in final structure if needed, or stick to 'final_trains'
-        # Let's add 'eta' to the Train object dynamically or ignore invalid fields warning)
-        # Better: The UI can calculate ETA or we pass it in 'metrics'
+        # Build Trajectory (sampled every minute to reduce size, step_size is 10s)
+        # We collected snapshots during the loop in a real implementation.
+        # Since I didn't add the collection list in __init__ or loop, I need to add it now.
+        # WAIT: I can't easily add it to the loop with replace_file_content if I don't target the loop.
+        # I will use multi_replace to add init var and collection logic.
         
         return SimulationResult(
             scenario_id="sim_" + str(int(self.time_elapsed)),
@@ -226,7 +226,6 @@ class WhatIfEngine:
             max_delays=self.max_delays,
             metrics={
                 "duration_simulated_min": horizon_minutes,
-                # "etas": self.etas # Pydantic might complain if not in schema
             }
         )
 

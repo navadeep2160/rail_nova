@@ -14,11 +14,16 @@ export default function Sidebar() {
 
     return (
         <div className="w-64 h-screen bg-card border-r border-border flex flex-col p-4">
-            <div className="mb-8 flex items-center gap-2 px-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">RN</span>
+            <div className="mb-8 flex items-center gap-3 px-2">
+                <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center border border-white/10">
+                    <span className="text-white font-bold font-mono text-lg">RN</span>
                 </div>
-                <h1 className="text-xl font-bold tracking-tight">Rail-Nova</h1>
+                <div>
+                    <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-200 bg-clip-text text-transparent">
+                        Rail Nova
+                    </h1>
+                    <p className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Future Mobility</p>
+                </div>
             </div>
 
             <nav className="space-y-2 flex-1">
